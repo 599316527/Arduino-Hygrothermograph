@@ -1,6 +1,8 @@
 Arduino Hygrothermograph
 ================
 
+[Watch it](https://youtu.be/psEQqWwFrKI).
+
 * Arduino UNO
 * OLED i2c display
 * DHT11 Sensor

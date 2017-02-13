@@ -17,7 +17,13 @@ SimpleDHT11 dht11;
 
 Adafruit_SSD1306 display(OLED_RESET);
 
-unsigned int uptime = 0;
+struct Time {
+  unsigned int hour;
+  unsigned char minute;
+  unsigned char second;
+};
+
+Time upTime = {0, 0, 0};
 
 void setup()   {
   Serial.begin(9600);
@@ -34,10 +40,11 @@ void loop() {
   display.print("Kyle");
 
   display.setCursor(40, 0);
-  display.print(getUpTime(++uptime * DELAY));
+  increaseUpTime(&upTime);
+  display.print(formatUpTime(&upTime));
 
   display.setCursor(128 - 8, 0);
-  display.print(uptime % 2 ? "+" : "x");
+  display.print(upTime.second % 2 ? "+" : "x");
 
   display.setCursor(0, 16);
   if (!dht11.read(pinDHT11, &temperature, &humidity, NULL)) {
@@ -52,7 +59,7 @@ void loop() {
     display.print("*");
     display.setTextSize(2);
     display.println("C");
-  
+
     display.setCursor(0, 16 * 2 + 5);
     display.setTextSize(1);
     display.setTextColor(BLACK, WHITE);
@@ -74,16 +81,23 @@ void loop() {
   delay(DELAY * 1000);
 }
 
-String getUpTime(int sec) {
-  int h = sec / 3600;
-  sec -= h * 3600;
-  int m = sec / 60;
-  sec -= m * 60;
-  
-  String hh = String(h);
-  String mm = String(m);
-  String ss = String(sec);
-  
-  return (h > 9 ? hh : "0" + hh) + ":" + (m > 9 ? mm : "0" + mm) + ":" + (sec > 9 ? ss : "0" + ss);
+String formatUpTime(Time *upTime) {
+  String hh = String(upTime->hour);
+  String mm = String(upTime->minute);
+  String ss = String(upTime->second);
+
+  return (upTime->hour > 9 ? hh : "0" + hh)
+    + ":" + (upTime->minute > 9 ? mm : "0" + mm)
+    + ":" + (upTime->second > 9 ? ss : "0" + ss);
 }
 
+void increaseUpTime(Time *upTime) {
+  if (++upTime->second >= 60) {
+    ++upTime->minute;
+    upTime->second = 0;
+  }
+  if (upTime->minute >= 60) {
+    ++upTime->hour;
+    upTime->minute = 0;
+  }
+}
